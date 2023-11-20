@@ -1,0 +1,5 @@
+python -m venv {env_name}
+
+activate env:
+    -source env/bin/activate
+    
