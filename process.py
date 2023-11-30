@@ -155,7 +155,7 @@ def diletation(binary_img, iterations = 1):
     """
 
     img_cpy = binary_img.copy()
-    struct_tuple = tuple( yaml_const['PROCESSING_CONST']['STRUCT_SIZE'])
+    struct_tuple = tuple(yaml_const['PROCESSING_CONST']['STRUCT_SIZE'])
     
     struct = cv.getStructuringElement(cv.MORPH_RECT, struct_tuple) 
     dilatted = cv.dilate(img_cpy, struct, iterations=iterations)
@@ -188,84 +188,68 @@ def hole_filling(binary_img):
 
     return dilatted | inverted
 
-def estimate_hough_params(line):
-    
-    line_cpy = line.copy()
 
 def internal_pixel_removal_2(binary_img):
 
     img_cpy = binary_img.copy()
 
     filled = hole_filling(img_cpy)
-    kernel = cv.getStructuringElement(cv.MORPH_CROSS, (4, 4))
+    kernel = cv.getStructuringElement(cv.MORPH_CROSS, (3, 3))
     eroded = cv.erode(filled,  kernel, iterations=1)
     
     ret_img = filled - eroded
     return ret_img
 
-# def get_max_line(lines):
-
-#     max_dist = 0
-#     max_points = []
-
-#     if lines is not None:
-#         for points in lines:
-#             x1, y1, x2, y2 = points[0]
-#             distance = math.dist([x1, y1], [x2, y2])
-#             if max_dist < distance:
-#                 max_dist = distance
-#                 max_points = [x1, y1, x2, y2]
-
-#     return max_points
 
 def detect_line(line_slice):
 
     sliced = line_slice.copy()
-
+    # gap = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
     contours = internal_pixel_removal_2(sliced)
-
-    lines = cv.HoughLinesP(contours,
-                            1,
-                            2 * math.pi / 180,
-                            threshold=10,
-                            minLineLength=50,
-                            maxLineGap=50)
+    # contours = cv.Canny(contours, 1, 1)
+    # lines = cv.HoughLinesP(contours,
+    #                         1,
+    #                         90 * math.pi / 180,
+    #                         threshold=30,
+    #                         minLineLength=gap,
+    #                         maxLineGap=300)
+    
+    lines = cv.HoughLines(contours, 1, 0.5 * math.pi / 180, 200)
 
     cv.imshow('Sliced', contours)
     cv.waitKey()
 
     return lines
 
-def detect_lines(binary_img, gray_img, top, bottom):
+
+def detect_lines(binary_img, gray_img):
  
     img_cpy = binary_img.copy()
     original = gray_img.copy()
     
     original_rgb = cv.cvtColor(original, cv.COLOR_GRAY2BGR)
-    
-    avg_line_height = yaml_const['PROCESSING_CONST']['AVG_LINE_HEIGHT']
 
-    line_nums = math.floor((bottom - top) / avg_line_height)
+    lines = detect_line(img_cpy)
 
-    for line in range(1, line_nums):
+    if lines is not None:
+        print(len(lines))
+        for idx, line in enumerate(lines):
 
-        if line == 1:
-            slice = img_cpy[top + (avg_line_height * (line - 1)) : top + (avg_line_height * line), :]
-        else:
-            slice = img_cpy[avg_line_height * (line - 1) : avg_line_height * line, :]
-
-        max_line_points = detect_line(slice)
-
-        if max_line_points is not None:
-            for points in max_line_points:
-                x1, y1, x2, y2 = points[0]
-                if len(max_line_points) > 0:
-                    cv.line(original_rgb,
-                            (x1,
-                            y1 + (top + (avg_line_height * (line - 1)))),
-                            (x2,
-                            y2 + (top + (avg_line_height * (line - 1)))),
-                            (255, 0, 0),
-                            2)
+            rho, theta = line[0]
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            x1 = int(x0 + 2970 * (-b))
+            y1 = int(y0 + 4200 * (a))
+            x2 = int(x0 - 2970 * (-b))
+            y2 = int(y0 - 4200 * (a))
             
+            print(f'{idx} pic', x1, y1, x2, y2)
+            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+            # x1, y1, x2, y2 = line[0]
+            # if len(line) > 0:
+            #     cv.line(original_rgb, (x1, y1), (x2, y2), (255, 0, 0), 2)
+        
     return original_rgb

@@ -40,7 +40,7 @@ features_df = pd.DataFrame()
 yaml_const = read_yaml('config.yaml')
 
 def convert_to_img(path: str) -> str:
-    """Gets input image path and converts PDF to JPEG
+    """Gets input image path and converts PDF to PNG
 
     Args:
         path (str): Handwritten image path
@@ -57,9 +57,9 @@ def convert_to_img(path: str) -> str:
 
     file_name = splitted[-1]
 
-    img_path = yaml_const['PATH_CONST']['OUTPUTPATH'] + f'{file_name[:-4]}.jpg'
+    img_path = yaml_const['PATH_CONST']['OUTPUTPATH'] + f'{file_name[:-4]}.png'
 
-    img[0].save(img_path, 'JPEG')
+    img[0].save(img_path, 'PNG')
     
     return img_path, file_name[:-4]
 
@@ -112,7 +112,7 @@ def start_analysis():
 
     measure_margins(binary_img)
     csv_path = yaml_const['PATH_CONST']['ANALYSISPATH'] + file_name + '.csv'
-    features_df.to_csv(csv_path, sep=';', columns=features_df.columns)
+    features_df.to_csv(csv_path, sep=';', columns=features_df.column, index=False)
 
 
 
@@ -148,12 +148,12 @@ if __name__ == '__main__':
     # main_window.mainloop()
 
     # route = './data'
-    # # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
-    # # for i, f in enumerate(files):
-    # #     img = convert_from_path(files[i], dpi=254)
-    # #     # 7 removes the ./data/ substring
-    # #     img[0].save(f'tmp/{f[7:-4]}.jpg', 'JPEG')
-    # """Convert from pdf to JPEG 
+    # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
+    # for i, f in enumerate(files): 
+    #     img = convert_from_path(files[i], dpi=254)      
+    #     # 7 removes the ./data/ substring
+    #     img[0].save(f'tmp/{f[7:-4]}.png', 'PNG')
+    # """Convert from pdf to JPEG
     # """
 
     route = './tmp'
@@ -164,18 +164,19 @@ if __name__ == '__main__':
     #     cv.imshow(f'Binary Image {i}', resized)
     #     cv.waitKey()   
     # cv.destroyAllWindows()
-    """Test loop for all the images.
-    """ 
+    # """Test loop for all the images.
+    # """ 
 
     for i, f in enumerate(files):
         gray_img, img = process.convert_img_2_binary(f)
-        top, bottom, right, left = process.get_margins(img) 
-        internal_removed = process.detect_lines(img, gray_img, top, bottom)
-        img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
+        # top, bottom, right, left = process.get_margins(img) 
+        # internal_removed = process.detect_lines(img, gray_img, top, bottom)
+        # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
+        
+        # img_show = process.test_line_segments(img)
+        img_show = process.detect_lines(img, gray_img)
+
         cv.imshow(f'With margin {i}', img_show)
-        # tester.slice_line(img, yaml_const['PROCESSING_CONST']['AVG_LINE_HEIGHT'],
-        #                 top, bottom)
-        # tester.test_canny(img)
         cv.waitKey()
         cv.destroyAllWindows()
 
