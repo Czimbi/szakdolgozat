@@ -46,7 +46,7 @@ def convert_to_img(path: str) -> str:
         path (str): Handwritten image path
 
     Returns:
-        str: JPEG image path
+        str: PNG image path
     """
     img = convert_from_path(path, dpi=254)
      
@@ -117,8 +117,8 @@ def start_analysis():
 
 
 if __name__ == '__main__':
-    # """ 
-    #     TODO proper documentation 
+    # """
+    #     TODO proper documentation
     # """
 
     # main_window = tk.Tk()
@@ -136,14 +136,14 @@ if __name__ == '__main__':
     # main_window.columnconfigure(0)
     # main_window.columnconfigure(1)
 
-    # main_window.rowconfigure(0)
+    # main_window.rowconfigure(0) 
     # main_window.rowconfigure(1)
 
     # select_file_label.grid(row=0, column=0)
     # selected_file_label.grid(row=0, column=1, columnspan=4)
 
     # select_file_btn.grid(row=1, column=0)
-    # start_analysis_btn.grid(row=1, column=1)
+    # start_analysis_btn.grid(row=1, column=1) 
 
     # main_window.mainloop()
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     #     img[0].save(f'tmp/{f[7:-4]}.png', 'PNG')
     # """Convert from pdf to JPEG
     # """
-
+ 
     route = './tmp'
     files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
 
@@ -165,17 +165,20 @@ if __name__ == '__main__':
     #     cv.waitKey()   
     # cv.destroyAllWindows()
     # """Test loop for all the images.
-    # """ 
-
+    # """
+           
     for i, f in enumerate(files):
         gray_img, img = process.convert_img_2_binary(f)
-        # top, bottom, right, left = process.get_margins(img) 
+        top, bottom, right, left = process.get_margins(img)  
+        consc_left = process.get_conscious_margin(img, top)
+        bottom_left = process.get_2nd_point_4_slope(img, bottom)
         # internal_removed = process.detect_lines(img, gray_img, top, bottom)
         # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
         
         # img_show = process.test_line_segments(img)
+        # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
         img_show = process.detect_lines(img, gray_img)
-
+        
         cv.imshow(f'With margin {i}', img_show)
         cv.waitKey()
         cv.destroyAllWindows()

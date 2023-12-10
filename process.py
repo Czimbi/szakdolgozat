@@ -2,8 +2,11 @@ import cv2 as cv
 
 import numpy as np
 import math
-
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import DBSCAN
 from main import read_yaml
+import matplotlib.pyplot as plt
 
 yaml_const = read_yaml('config.yaml')
 
@@ -143,7 +146,7 @@ def get_2nd_point_4_slope(binary_image, bottom_start):
 
     return np.where(col_left > (cols_min_left * 0.01))[0][0]
 
-def diletation(binary_img, iterations = 1):
+def diletation(binary_img, iterations = 1, struct_tuple = tuple(yaml_const['PROCESSING_CONST']['STRUCT_SIZE'])):
     """Diletates an image
 
     Args:
@@ -155,7 +158,6 @@ def diletation(binary_img, iterations = 1):
     """
 
     img_cpy = binary_img.copy()
-    struct_tuple = tuple(yaml_const['PROCESSING_CONST']['STRUCT_SIZE'])
     
     struct = cv.getStructuringElement(cv.MORPH_RECT, struct_tuple) 
     dilatted = cv.dilate(img_cpy, struct, iterations=iterations)
@@ -194,7 +196,7 @@ def internal_pixel_removal_2(binary_img):
     img_cpy = binary_img.copy()
 
     filled = hole_filling(img_cpy)
-    kernel = cv.getStructuringElement(cv.MORPH_CROSS, (3, 3))
+    kernel = cv.getStructuringElement(cv.MORPH_CROSS, (4, 4))
     eroded = cv.erode(filled,  kernel, iterations=1)
     
     ret_img = filled - eroded
@@ -204,23 +206,59 @@ def internal_pixel_removal_2(binary_img):
 def detect_line(line_slice):
 
     sliced = line_slice.copy()
-    # gap = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
+    gap = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
     contours = internal_pixel_removal_2(sliced)
-    # contours = cv.Canny(contours, 1, 1)
-    # lines = cv.HoughLinesP(contours,
-    #                         1,
-    #                         90 * math.pi / 180,
-    #                         threshold=30,
-    #                         minLineLength=gap,
-    #                         maxLineGap=300)
     
-    lines = cv.HoughLines(contours, 1, 0.5 * math.pi / 180, 200)
+    rho_res = 1 
+    theta_res = 0.25 * math.pi / 180
+
+    lines = cv.HoughLines(contours, rho_res, theta_res, 200)
 
     cv.imshow('Sliced', contours)
+    cv.imwrite('tmp/test_contours.png', contours)
     cv.waitKey()
 
     return lines
 
+
+def cartesian_to_polar(x, y):
+
+    theta =  np.arctan2(y, x)
+    rho = x * np.cos(theta) + y * np.sin(theta)
+    return rho, theta
+
+def Palagyis_megoldas(lines):
+    
+    img_diag = np.sqrt(2970 ** 2 + 4200 ** 2)
+
+    rho_res = 1
+    theta_res =  0.25 * np.pi / 180
+
+    height = int(np.round(img_diag / rho_res))
+    width = int(np.round(np.pi / theta_res))
+
+
+    accumulator = np.zeros((height, width), dtype=np.uint8)
+
+    if lines is not None:
+        for line in lines:
+            r, theta = line[0]
+            r_index =  int(np.round(r))
+            theta_index = int(np.round(theta))
+            accumulator[r_index, theta_index] = 1
+
+    accumulator = diletation(accumulator, struct_tuple=yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH']) #Hát ha
+    num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(accumulator, 4, cv.CV_32S)
+
+    # for label in labels:
+
+
+    print(f"Accumulator array: {np.sum(accumulator)}, line count: {len(lines)}, Label count: {num_labels}")
+    print(f'Indexes {np.where(accumulator == 1)}')
+    cv.imshow('accumulator', accumulator)
+    
+    # return centroids
+    return np.array([cartesian_to_polar(x, y) for x, y in centroids])
 
 def detect_lines(binary_img, gray_img):
  
@@ -229,13 +267,38 @@ def detect_lines(binary_img, gray_img):
     
     original_rgb = cv.cvtColor(original, cv.COLOR_GRAY2BGR)
 
+    gap_y = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
+
+    cv.imshow('blured', img_cpy)
+
+
     lines = detect_line(img_cpy)
+#     if lines is not None:
+# # 
+#         for line in lines:
+# # 
+#             rho, theta = line[0]
+#             # rho, theta = line
+#             a = np.cos(theta)
+#             b = np.sin(theta)
+#             x0 = a * rho
+#             y0 = b * rho
+#             x1 = int(x0 + 2970 * (-b))
+#             y1 = int(y0 + 4200 * (a))
+#             x2 = int(x0 - 2970 * (-b))
+#             y2 = int(y0 - 4200 * (a))
+# #   
+#             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+    lines2 = Palagyis_megoldas(lines)
+    # lines = lines_clustering(lines, 1, 2)
 
     if lines is not None:
-        print(len(lines))
-        for idx, line in enumerate(lines):
 
-            rho, theta = line[0]
+        for line in lines2:
+
+            # rho, theta = line[0]
+            rho, theta = line
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
@@ -244,12 +307,8 @@ def detect_lines(binary_img, gray_img):
             y1 = int(y0 + 4200 * (a))
             x2 = int(x0 - 2970 * (-b))
             y2 = int(y0 - 4200 * (a))
-            
-            print(f'{idx} pic', x1, y1, x2, y2)
+
             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-            # x1, y1, x2, y2 = line[0]
-            # if len(line) > 0:
-            #     cv.line(original_rgb, (x1, y1), (x2, y2), (255, 0, 0), 2)
-        
+
     return original_rgb
