@@ -159,7 +159,7 @@ def diletation(binary_img, iterations = 1, struct_tuple = tuple(yaml_const['PROC
 
     img_cpy = binary_img.copy()
     
-    struct = cv.getStructuringElement(cv.MORPH_RECT, struct_tuple) 
+    struct = cv.getStructuringElement(cv.MORPH_RECT, struct_tuple)
     dilatted = cv.dilate(img_cpy, struct, iterations=iterations)
 
     return dilatted
@@ -202,7 +202,6 @@ def internal_pixel_removal_2(binary_img):
     ret_img = filled - eroded
     return ret_img
 
-
 def detect_line(line_slice):
 
     sliced = line_slice.copy()
@@ -215,7 +214,6 @@ def detect_line(line_slice):
     lines = cv.HoughLines(contours, rho_res, theta_res, 200)
 
     cv.imshow('Sliced', contours)
-    cv.imwrite('tmp/test_contours.png', contours)
     cv.waitKey()
 
     return lines
@@ -247,7 +245,9 @@ def Palagyis_megoldas(lines):
             theta_index = int(np.round(theta))
             accumulator[r_index, theta_index] = 1
 
-    accumulator = diletation(accumulator, struct_tuple=yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH']) #Hát ha
+
+    struct = cv.getStructuringElement(cv.MORPH_ELLIPSE, yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH'])
+    accumulator = cv.dilate(accumulator, struct, iterations=1)
     num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(accumulator, 4, cv.CV_32S)
 
     # for label in labels:
@@ -291,8 +291,6 @@ def detect_lines(binary_img, gray_img):
 #             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     lines2 = Palagyis_megoldas(lines)
-    # lines = lines_clustering(lines, 1, 2)
-
     if lines is not None:
 
         for line in lines2:
