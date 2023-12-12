@@ -176,11 +176,11 @@ if __name__ == '__main__':
         # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
         
         # img_show = process.test_line_segments(img)
-        # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
-        img_show = process.detect_lines(img, gray_img)
+        img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
+        # img_show = process.detect_lines(img, gray_img)
 
         cv.imshow(f'With margin {i}', img_show)
-        cv.imwrite(f'lines/{i}.png', img_show)
+        cv.imwrite(f'hough_lines/{i}.png', img_show)
         cv.waitKey()
         cv.destroyAllWindows()
 

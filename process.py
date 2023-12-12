@@ -213,9 +213,6 @@ def detect_line(line_slice):
 
     lines = cv.HoughLines(contours, rho_res, theta_res, 200)
 
-    cv.imshow('Sliced', contours)
-    cv.waitKey()
-
     return lines
 
 
@@ -273,30 +270,12 @@ def detect_lines(binary_img, gray_img):
 
 
     lines = detect_line(img_cpy)
-#     if lines is not None:
-# # 
-#         for line in lines:
-# # 
-#             rho, theta = line[0]
-#             # rho, theta = line
-#             a = np.cos(theta)
-#             b = np.sin(theta)
-#             x0 = a * rho
-#             y0 = b * rho
-#             x1 = int(x0 + 2970 * (-b))
-#             y1 = int(y0 + 4200 * (a))
-#             x2 = int(x0 - 2970 * (-b))
-#             y2 = int(y0 - 4200 * (a))
-# #   
-#             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-    lines2 = Palagyis_megoldas(lines)
     if lines is not None:
-
-        for line in lines2:
-
-            # rho, theta = line[0]
-            rho, theta = line
+# 
+        for line in lines:
+# 
+            rho, theta = line[0]
+            # rho, theta = line
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
@@ -305,8 +284,26 @@ def detect_lines(binary_img, gray_img):
             y1 = int(y0 + 4200 * (a))
             x2 = int(x0 - 2970 * (-b))
             y2 = int(y0 - 4200 * (a))
+#   
+            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
+    # lines2 = Palagyis_megoldas(lines)
+    # if lines is not None:
+
+    #     for line in lines2:
+
+    #         # rho, theta = line[0]
+    #         rho, theta = line
+    #         a = np.cos(theta)
+    #         b = np.sin(theta)
+    #         x0 = a * rho
+    #         y0 = b * rho
+    #         x1 = int(x0 + 2970 * (-b))
+    #         y1 = int(y0 + 4200 * (a))
+    #         x2 = int(x0 - 2970 * (-b))
+    #         y2 = int(y0 - 4200 * (a))
+
+    #         cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
 
     return original_rgb

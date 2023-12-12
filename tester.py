@@ -5,7 +5,7 @@ import process
 
 def draw_line(binary_img, margin_top, margin_bottom, margin_right, margin_left_start, margin_left_end):
     img_cpy = binary_img.copy()
-    img_clr = cv.cvtColor(img_cpy, cv.COLORMAP_JET)
+    img_clr = cv.cvtColor(img_cpy, cv.COLOR_GRAY2BGR)
     top_line = cv.line(img_clr, (0, margin_top), (img_cpy.shape[1], margin_top), (255, 0, 0), 5)
     bottom_line = cv.line(top_line, (0, margin_bottom), (img_cpy.shape[1], margin_bottom), (255, 255, 0), 5)
     right_line = cv.line(bottom_line, (margin_right, margin_top), (margin_right, margin_bottom), (0, 255, 0), 5)
