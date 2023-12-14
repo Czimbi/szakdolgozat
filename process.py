@@ -277,7 +277,7 @@ def detect_lines(binary_img, gray_img):
 #             x0 = a * rho
 #             y0 = b * rho
 #             x1 = int(x0 + 5000 * (-b))
-#             y1 = int(y0 + 5000 * (a))
+#             y1 = int(y0 + 5000 * (a)
 #             x2 = int(x0 - 5000 * (-b))
 #             y2 = int(y0 - 5000 * (a))
 # #   
