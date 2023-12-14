@@ -2,11 +2,7 @@ import cv2 as cv
 
 import numpy as np
 import math
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import DBSCAN
 from main import read_yaml
-import matplotlib.pyplot as plt
 
 yaml_const = read_yaml('config.yaml')
 
@@ -106,8 +102,9 @@ def get_margins(binary_image):
    bottom_margin = get_bottom_margin(rows, row_max)
    right_margin = get_right_margin(cols, col_max)
    left_margin = get_left_margin(cols, col_max)
-
-   return (top_margin[0], bottom_margin[-1], right_margin[-1], left_margin[0])
+   
+   if len(top_margin) != 0 and len(bottom_margin) != 0 and len(right_margin) != 0 and len(left_margin) != 0:
+        return (top_margin[0], bottom_margin[-1], right_margin[-1], left_margin[0])
 
 def get_conscious_margin(binary_image, top_start):
     """Calculates the conscious margins for the user
@@ -200,7 +197,7 @@ def internal_pixel_removal_2(binary_img):
     eroded = cv.erode(filled,  kernel, iterations=1)
     
     ret_img = filled - eroded
-    cv.imshow('contour', ret_img)
+    # cv.imshow('contour', ret_img)
     return ret_img
 
 def detect_line(line_slice):
@@ -218,59 +215,55 @@ def detect_line(line_slice):
     return lines
 
 
-def cartesian_to_polar(x, y):
+# def cartesian_to_polar(x, y):
 
-    theta =  np.arctan2(y, x)
-    rho = x * np.cos(theta) + y * np.sin(theta)
-    return rho, theta
+#     theta =  np.arctan2(y, x)
+#     rho = x * np.cos(theta) + y * np.sin(theta)
+#     return rho, theta
 
-def Palagyis_megoldas(lines):
+# def Palagyis_megoldas(lines):
     
-    img_diag = int(np.ceil(np.sqrt(2970 ** 2 + 4200 ** 2)))
+#     img_diag = int(np.ceil(np.sqrt(2970 ** 2 + 4200 ** 2)))
 
-    rho_res = 1
-    theta_res =  0.25 * np.pi / 180
+#     rho_res = 1
+#     theta_res =  0.25 * np.pi / 180
 
-    height = int(np.round(img_diag / rho_res))
-    width = int(np.round(np.pi / theta_res))
-
-
-    accumulator = np.zeros((height, width), dtype=np.uint8)
-
-    if lines is not None:
-        for line in lines:
-            r, theta = line[0]
-            r_index =  int(r + img_diag)
-            theta_index = int(theta / theta_res)
-            accumulator[r_index, theta_index] = 1
-            print(accumulator[r_index, theta_index])
-
-    # if np.max(accumulator) > 0:
-    #     accumulator = cv.normalize(accumulator, None, 0, 255, cv.NORM_MINMAX)
-    #     accumulator = np.uint8(accumulator)
-
-    struct = cv.getStructuringElement(cv.MORPH_ELLIPSE, yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH'])
-    # accumulator = cv.dilate(accumulator, struct, iterations=1)
-    cv.imwrite('akkumulátor_dilettált.png', accumulator)
-    num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(accumulator, 4, cv.CV_32S)
-
-    # for label in labels:
+#     height = int(np.round(img_diag / rho_res))
+#     width = int(np.round(np.pi / theta_res))
 
 
-    print(f"Accumulator array: {np.sum(accumulator)}, line count: {len(lines)}, Label count: {num_labels}")
-    print(f'Indexes {np.where(accumulator == 1)}')
-    # cv.imshow('accumulator', accumulator)
+#     accumulator = np.zeros((height, width), dtype=np.uint8)
+
+#     if lines is not None:
+#         for line in lines:
+#             r, theta = line[0]
+#             r_index =  int(r + img_diag)
+#             theta_index = int(theta / theta_res)
+#             accumulator[r_index, theta_index] = 1
+#             print(accumulator[r_index, theta_index])
+
+#     struct = cv.getStructuringElement(cv.MORPH_ELLIPSE, yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH'])
+#     # accumulator = cv.dilate(accumulator, struct, iterations=1)
+#     cv.imwrite('akkumulátor_dilettált.png', accumulator)
+#     num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(accumulator, 4, cv.CV_32S)
+
+#     # for label in labels:
+
+
+#     print(f"Accumulator array: {np.sum(accumulator)}, line count: {len(lines)}, Label count: {num_labels}")
+#     print(f'Indexes {np.where(accumulator == 1)}')
+#     # cv.imshow('accumulator', accumulator)
     
-    # return centroids
-    return np.array([cartesian_to_polar(x, y) for x, y in centroids])
+#     # return centroids
+#     return np.array([cartesian_to_polar(x, y) for x, y in centroids])
 
 def detect_lines(binary_img, gray_img):
  
     img_cpy = binary_img.copy()
     original = gray_img.copy()
-    cv.imshow('original', original)
+    # cv.imshow('original', original)
     original_rgb = cv.cvtColor(original, cv.COLOR_GRAY2BGR)
-    cv.imshow('original RGB', original_rgb)
+    # cv.imshow('original RGB', original_rgb)
 
     lines = detect_line(img_cpy)
 #     if lines is not None:
@@ -291,7 +284,9 @@ def detect_lines(binary_img, gray_img):
 #             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
     # lines2 = Palagyis_megoldas(lines)
-    lines2 = average_nearby_lines(lines, 100, 10* np.pi/180)
+    x_thresh = yaml_const['PROCESSING_CONST']['X_THRESH']
+    y_thresh = yaml_const['PROCESSING_CONST']['Y_THRESH']
+    lines2 = average_nearby_lines(lines, x_thresh, y_thresh* np.pi/180)
 
     thetas = []
     if lines2 is not None:
@@ -312,7 +307,7 @@ def detect_lines(binary_img, gray_img):
             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
 
-    return original_rgb, np.average(thetas)
+    return original_rgb, thetas
 
 def average_nearby_lines(lines, rho_threshold, theta_threshold):
     """
@@ -330,10 +325,12 @@ def average_nearby_lines(lines, rho_threshold, theta_threshold):
     if lines is None:
         return []
 
+    lines = filter_lines_by_angle(lines, yaml_const['PROCESSING_CONST']['VERTICAL_THRESH'])
+
     # Group lines based on the threshold
     grouped_lines = []
     for line in lines:
-        rho, theta = line[0]
+        rho, theta = line
         found_group = False
         for group in grouped_lines:
             if abs(group['mean_rho'] - rho) < rho_threshold and abs(group['mean_theta'] - theta) < theta_threshold:
@@ -349,3 +346,27 @@ def average_nearby_lines(lines, rho_threshold, theta_threshold):
     averaged_lines = [(group['mean_rho'], group['mean_theta']) for group in grouped_lines]
 
     return averaged_lines
+
+def filter_lines_by_angle(lines, vert_thresh):
+
+    filtered_lines = []
+    for line in lines:
+        rho, theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a * rho
+        y0 = b * rho
+        x1 = int(x0 + 5000 * (-b))
+        y1 = int(y0 + 5000 * (a))
+        x2 = int(x0 - 5000 * (-b))
+        y2 = int(y0 - 5000 * (a))
+
+        delt_x = abs(x2 - x1)
+        delt_y = abs(y2 - y1)
+
+        if delt_y == 0:
+            continue
+        elif (delt_x / delt_y) > vert_thresh:
+            filtered_lines.append((rho, theta))
+
+    return filtered_lines

@@ -88,26 +88,39 @@ def measure_margins(binary_img):
     img_cpy = binary_img.copy()
     top, bottom, right, left = process.get_margins(img_cpy)
 
-    features_df['Felső margó'] = [top / 100]
-    features_df['Alsó margó'] = [bottom / 100]
-    features_df['Minimális bal margó'] = [left / 100]
+    if top is not None and bottom is not None and right is not None and left is not None:
 
-    conscious_left = process.get_conscious_margin(img_cpy, top)
+        features_df['Felső margó'] = [round(top / 100,2)]
+        features_df['Alsó margó'] = round(bottom / 100, 2)
+        features_df['Minimális bal margó'] = round(left / 100, 2)
 
-    features_df['Tudatos bal margó'] = [conscious_left / 100] 
+        conscious_left = process.get_conscious_margin(img_cpy, top)
 
-    second_point = process.get_2nd_point_4_slope(img_cpy, bottom)
+        features_df['Tudatos bal margó'] = round(conscious_left / 100, 2) 
 
-    slope = (bottom - top) / (conscious_left - second_point)
+        second_point = process.get_2nd_point_4_slope(img_cpy, bottom)
 
-    features_df['Bal margó iránya'] = [slope]
+        slope = (bottom - top) / (conscious_left - second_point)
+
+        features_df['Bal margó iránya'] = round(slope, 2)
+    else:
+        tk.messagebox.showinfo('Margók nem találhatóak')
 
 def start_hough(binary, gray):
+    """Calls the functions to detect the line orientations.
+
+    Args:
+        binary np.ndarray: Binary Image
+        gray np.ndarray: GrayScale Image
+    """
     
     img, averages = process.detect_lines(binary, gray)
-    features_df['Atlagos Sorirány'] = averages
+    for i, theta in enumerate(averages):
+        features_df[f'Sor_{i}'] = round(theta, 2) 
 
 def start_analysis():
+    """Starts the analysis and calls the proper functions.
+    """
     path = selected_file_label.cget('text')
     img_path, file_name = convert_to_img(path)
 
@@ -122,35 +135,32 @@ def start_analysis():
 
 
 if __name__ == '__main__':
-    # """
-    #     TODO proper documentation
-    # """
 
-    # main_window = tk.Tk()
-    # main_window.title(TITLE)
-    # main_window.geometry(GEOMETRY)
-# 
-    # select_file_label = tk.Label(main_window, text=SELECT_FILE_TEXT)
-# 
-    # selected_file_label = tk.Label(main_window)
-# 
-    # select_file_btn = tk.Button(main_window, text=SELECT_FILE_BROWSE, command=write_path)
-# 
-    # start_analysis_btn = tk.Button(main_window, text=START, command=start_analysis)
-# 
-    # main_window.columnconfigure(0)
-    # main_window.columnconfigure(1)
-# 
-    # main_window.rowconfigure(0) 
-    # main_window.rowconfigure(1)
-# 
-    # select_file_label.grid(row=0, column=0)
-    # selected_file_label.grid(row=0, column=1, columnspan=4)
-# 
-    # select_file_btn.grid(row=1, column=0)
-    # start_analysis_btn.grid(row=1, column=1)
-    # main_window.mainloop()
+    main_window = tk.Tk()
+    main_window.title(TITLE)
+    main_window.geometry(GEOMETRY)
 
+    select_file_label = tk.Label(main_window, text=SELECT_FILE_TEXT)
+
+    selected_file_label = tk.Label(main_window)
+
+    select_file_btn = tk.Button(main_window, text=SELECT_FILE_BROWSE, command=write_path)
+
+    start_analysis_btn = tk.Button(main_window, text=START, command=start_analysis)
+
+    main_window.columnconfigure(0)
+    main_window.columnconfigure(1)
+
+    main_window.rowconfigure(0) 
+    main_window.rowconfigure(1)
+
+    select_file_label.grid(row=0, column=0)
+    selected_file_label.grid(row=0, column=1, columnspan=4)
+
+    select_file_btn.grid(row=1, column=0)
+    start_analysis_btn.grid(row=1, column=1)
+    main_window.mainloop()
+ 
     # route = './data'
     # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
     # for i, f in enumerate(files): 
@@ -160,33 +170,33 @@ if __name__ == '__main__':
     # """Convert from pdf to JPEG
     # """
  
-    route = './tmp'
-    files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
+    # route = './tmp'
+    # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
 
-    # for i, f in enumerate(files):
-    #     resized = cv.resize(process.convert_img_2_binary(f), (1000, 800))
-    #     cv.imshow(f'Binary Image {i}', resized)
-    #     cv.waitKey() 
-    # cv.destroyAllWindows()
-    # """Test loop for all the images.
-    # """
+    # # for i, f in enumerate(files):
+    # #     resized = cv.resize(process.convert_img_2_binary(f), (1000, 800))
+    # #     cv.imshow(f'Binary Image {i}', resized)
+    # #     cv.waitKey() 
+    # # cv.destroyAllWindows()
+    # # """Test loop for all the images.
+    # # """
            
-    for i, f in enumerate(files):
-        gray_img, img = process.convert_img_2_binary(f)
-        top, bottom, right, left = process.get_margins(img)  
-        consc_left = process.get_conscious_margin(img, top)
-        bottom_left = process.get_2nd_point_4_slope(img, bottom)
-        # internal_removed = process.detect_lines(img, gray_img, top, bottom)
-        # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
+    # for i, f in enumerate(files):
+    #     gray_img, img = process.convert_img_2_binary(f)
+    #     # top, bottom, right, left = process.get_margins(img)  
+    #     # consc_left = process.get_conscious_margin(img, top)
+    #     # bottom_left = process.get_2nd_point_4_slope(img, bottom)
+    #     # # internal_removed = process.detect_lines(img, gray_img, top, bottom)
+    #     # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
         
-        # img_show = process.test_line_segments(img)
-        # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
-        img_show, avg = process.detect_lines(img, gray_img)
+    #     # img_show = process.test_line_segments(img)
+    #     # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
+    #     img_show, avg = process.detect_lines(img, gray_img)
 
-        cv.imshow(f'With margin {i}', img_show)
-        # cv.imshow(f'hough_lines/{i}.png', img_show)
-        cv.waitKey()
-        cv.destroyAllWindows()
+    #     # cv.imshow(f'With mar gin {i}', img_show)
+    #     cv.imwrite(f'lines/{i}.png', img_show)
+    #     # cv.waitKey()
+    #     cv.destroyAllWindows()
 
 
 
