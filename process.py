@@ -200,18 +200,20 @@ def internal_pixel_removal_2(binary_img):
     eroded = cv.erode(filled,  kernel, iterations=1)
     
     ret_img = filled - eroded
+    cv.imshow('contour', ret_img)
     return ret_img
 
 def detect_line(line_slice):
 
     sliced = line_slice.copy()
-    gap = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
+    max_cell = yaml_const['PROCESSING_CONST']['HOUGH_MAX_CELL']
+
     contours = internal_pixel_removal_2(sliced)
     
     rho_res = 1 
     theta_res = 0.25 * math.pi / 180
 
-    lines = cv.HoughLines(contours, rho_res, theta_res, 200)
+    lines = cv.HoughLines(contours, rho_res, theta_res, max_cell)
 
     return lines
 
@@ -224,7 +226,7 @@ def cartesian_to_polar(x, y):
 
 def Palagyis_megoldas(lines):
     
-    img_diag = np.sqrt(2970 ** 2 + 4200 ** 2)
+    img_diag = int(np.ceil(np.sqrt(2970 ** 2 + 4200 ** 2)))
 
     rho_res = 1
     theta_res =  0.25 * np.pi / 180
@@ -238,13 +240,18 @@ def Palagyis_megoldas(lines):
     if lines is not None:
         for line in lines:
             r, theta = line[0]
-            r_index =  int(np.round(r))
-            theta_index = int(np.round(theta))
+            r_index =  int(r + img_diag)
+            theta_index = int(theta / theta_res)
             accumulator[r_index, theta_index] = 1
+            print(accumulator[r_index, theta_index])
 
+    # if np.max(accumulator) > 0:
+    #     accumulator = cv.normalize(accumulator, None, 0, 255, cv.NORM_MINMAX)
+    #     accumulator = np.uint8(accumulator)
 
     struct = cv.getStructuringElement(cv.MORPH_ELLIPSE, yaml_const['PROCESSING_CONST']['DILET_FOR_HOUGH'])
-    accumulator = cv.dilate(accumulator, struct, iterations=1)
+    # accumulator = cv.dilate(accumulator, struct, iterations=1)
+    cv.imwrite('akkumulátor_dilettált.png', accumulator)
     num_labels, labels, stats, centroids = cv.connectedComponentsWithStats(accumulator, 4, cv.CV_32S)
 
     # for label in labels:
@@ -252,7 +259,7 @@ def Palagyis_megoldas(lines):
 
     print(f"Accumulator array: {np.sum(accumulator)}, line count: {len(lines)}, Label count: {num_labels}")
     print(f'Indexes {np.where(accumulator == 1)}')
-    cv.imshow('accumulator', accumulator)
+    # cv.imshow('accumulator', accumulator)
     
     # return centroids
     return np.array([cartesian_to_polar(x, y) for x, y in centroids])
@@ -261,49 +268,84 @@ def detect_lines(binary_img, gray_img):
  
     img_cpy = binary_img.copy()
     original = gray_img.copy()
-    
+    cv.imshow('original', original)
     original_rgb = cv.cvtColor(original, cv.COLOR_GRAY2BGR)
-
-    gap_y = yaml_const['PROCESSING_CONST']['AVG_LINE_GAP']
-
-    cv.imshow('blured', img_cpy)
-
+    cv.imshow('original RGB', original_rgb)
 
     lines = detect_line(img_cpy)
-    if lines is not None:
+#     if lines is not None:
+# # 
+#         for line in lines:
+# # 
+#             rho, theta = line[0]
+#             # rho, theta = line
+#             a = np.cos(theta)
+#             b = np.sin(theta)
+#             x0 = a * rho
+#             y0 = b * rho
+#             x1 = int(x0 + 5000 * (-b))
+#             y1 = int(y0 + 5000 * (a))
+#             x2 = int(x0 - 5000 * (-b))
+#             y2 = int(y0 - 5000 * (a))
+# #   
+#             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+    # lines2 = Palagyis_megoldas(lines)
+    lines2 = average_nearby_lines(lines, 100, 10* np.pi/180)
+
+    thetas = []
+    if lines2 is not None:
 # 
-        for line in lines:
+        for line in lines2:
 # 
-            rho, theta = line[0]
-            # rho, theta = line
+            # rho, theta = line[0]
+            rho, theta = line
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
             y0 = b * rho
-            x1 = int(x0 + 2970 * (-b))
-            y1 = int(y0 + 4200 * (a))
-            x2 = int(x0 - 2970 * (-b))
-            y2 = int(y0 - 4200 * (a))
-#   
-            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-    # lines2 = Palagyis_megoldas(lines)
-    # if lines is not None:
-
-    #     for line in lines2:
-
-    #         # rho, theta = line[0]
-    #         rho, theta = line
-    #         a = np.cos(theta)
-    #         b = np.sin(theta)
-    #         x0 = a * rho
-    #         y0 = b * rho
-    #         x1 = int(x0 + 2970 * (-b))
-    #         y1 = int(y0 + 4200 * (a))
-    #         x2 = int(x0 - 2970 * (-b))
-    #         y2 = int(y0 - 4200 * (a))
-
-    #         cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
+            x1 = int(x0 + 5000 * (-b))
+            y1 = int(y0 + 5000 * (a))
+            x2 = int(x0 - 5000 * (-b))
+            y2 = int(y0 - 5000 * (a))
+            thetas.append(np.degrees(theta))
+            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
 
-    return original_rgb
+    return original_rgb, np.average(thetas)
+
+def average_nearby_lines(lines, rho_threshold, theta_threshold):
+    """
+    Averages the polar coordinates of lines that are close enough.
+
+    Args:
+    - lines (list of tuples): List of (rho, theta) tuples from HoughLines.
+    - rho_threshold (float): The maximum allowed difference in rho for lines to be considered close.
+    - theta_threshold (float): The maximum allowed difference in theta for lines to be considered close.
+
+    Returns:
+    - List of tuples: Averaged (rho, theta) coordinates.
+    """
+
+    if lines is None:
+        return []
+
+    # Group lines based on the threshold
+    grouped_lines = []
+    for line in lines:
+        rho, theta = line[0]
+        found_group = False
+        for group in grouped_lines:
+            if abs(group['mean_rho'] - rho) < rho_threshold and abs(group['mean_theta'] - theta) < theta_threshold:
+                group['lines'].append((rho, theta))
+                group['mean_rho'] = np.mean([l[0] for l in group['lines']])
+                group['mean_theta'] = np.mean([l[1] for l in group['lines']])
+                found_group = True
+                break
+        if not found_group:
+            grouped_lines.append({'lines': [(rho, theta)], 'mean_rho': rho, 'mean_theta': theta})
+
+    # Extract the averaged lines
+    averaged_lines = [(group['mean_rho'], group['mean_theta']) for group in grouped_lines]
+
+    return averaged_lines

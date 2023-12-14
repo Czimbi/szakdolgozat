@@ -102,7 +102,10 @@ def measure_margins(binary_img):
 
     features_df['Bal margó iránya'] = [slope]
 
-
+def start_hough(binary, gray):
+    
+    img, averages = process.detect_lines(binary, gray)
+    features_df['Atlagos Sorirány'] = averages
 
 def start_analysis():
     path = selected_file_label.cget('text')
@@ -111,9 +114,11 @@ def start_analysis():
     gray_scale_img, binary_img = process.convert_img_2_binary(img_path)
 
     measure_margins(binary_img)
-    csv_path = yaml_const['PATH_CONST']['ANALYSISPATH'] + file_name + '.csv'
-    features_df.to_csv(csv_path, sep=';', columns=features_df.column, index=False)
+    start_hough(binary_img, gray_scale_img)
 
+    csv_path = yaml_const['PATH_CONST']['ANALYSISPATH'] + file_name + '.csv'
+    features_df.to_csv(csv_path, sep=';', columns=features_df.columns, index=False)
+    tk.messagebox.showinfo('Elemzés kész')
 
 
 if __name__ == '__main__':
@@ -124,27 +129,26 @@ if __name__ == '__main__':
     # main_window = tk.Tk()
     # main_window.title(TITLE)
     # main_window.geometry(GEOMETRY)
-
+# 
     # select_file_label = tk.Label(main_window, text=SELECT_FILE_TEXT)
-
+# 
     # selected_file_label = tk.Label(main_window)
-
+# 
     # select_file_btn = tk.Button(main_window, text=SELECT_FILE_BROWSE, command=write_path)
-
+# 
     # start_analysis_btn = tk.Button(main_window, text=START, command=start_analysis)
-
+# 
     # main_window.columnconfigure(0)
     # main_window.columnconfigure(1)
-
+# 
     # main_window.rowconfigure(0) 
     # main_window.rowconfigure(1)
-
+# 
     # select_file_label.grid(row=0, column=0)
     # selected_file_label.grid(row=0, column=1, columnspan=4)
-
+# 
     # select_file_btn.grid(row=1, column=0)
-    # start_analysis_btn.grid(row=1, column=1) 
-
+    # start_analysis_btn.grid(row=1, column=1)
     # main_window.mainloop()
 
     # route = './data'
@@ -176,11 +180,11 @@ if __name__ == '__main__':
         # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
         
         # img_show = process.test_line_segments(img)
-        img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
-        # img_show = process.detect_lines(img, gray_img)
+        # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
+        img_show, avg = process.detect_lines(img, gray_img)
 
         cv.imshow(f'With margin {i}', img_show)
-        cv.imwrite(f'hough_lines/{i}.png', img_show)
+        # cv.imshow(f'hough_lines/{i}.png', img_show)
         cv.waitKey()
         cv.destroyAllWindows()
 
