@@ -189,6 +189,14 @@ def hole_filling(binary_img):
 
 
 def internal_pixel_removal_2(binary_img):
+    """Removes the internal pixels from the filled image.
+
+    Args:
+        binary_img np.ndarray: Binary image
+
+    Returns:
+        np.ndarray: Contour image
+    """
 
     img_cpy = binary_img.copy()
 
@@ -201,6 +209,14 @@ def internal_pixel_removal_2(binary_img):
     return ret_img
 
 def detect_line(line_slice):
+    """Runs Hough transform on contour image.
+
+    Args:
+        line_slice np.ndarray: Contour image
+
+    Returns:
+        np.ndarray: Returns the polar coordinates of detected lines. 
+    """
 
     sliced = line_slice.copy()
     max_cell = yaml_const['PROCESSING_CONST']['HOUGH_MAX_CELL']
@@ -258,6 +274,14 @@ def detect_line(line_slice):
 #     return np.array([cartesian_to_polar(x, y) for x, y in centroids])
 
 def detect_lines(binary_img, gray_img):
+    """Calls the necessary function for line detection.
+
+    Args:
+        binary_img np.ndarray: Binary image.
+        gray_img np.ndarray: Gray scale image, for testing purposes only.
+    Returns:
+        np.ndarray, np.ndarray: 1st value is for testin purposes (image with detected lines), 2nd the detected lines orientation
+    """
  
     img_cpy = binary_img.copy()
     original = gray_img.copy()
@@ -310,16 +334,15 @@ def detect_lines(binary_img, gray_img):
     return original_rgb, thetas
 
 def average_nearby_lines(lines, rho_threshold, theta_threshold):
-    """
-    Averages the polar coordinates of lines that are close enough.
+    """Averages the polar coordinates of lines that are close enough to each other.
 
     Args:
-    - lines (list of tuples): List of (rho, theta) tuples from HoughLines.
-    - rho_threshold (float): The maximum allowed difference in rho for lines to be considered close.
-    - theta_threshold (float): The maximum allowed difference in theta for lines to be considered close.
+        lines np.ndarray: List of (rho, theta) tuples from HoughLines.
+        rho_threshold float: The maximum allowed difference in rho for lines to be considered close.
+        theta_threshold float: The maximum allowed difference in theta for lines to be considered close.
 
     Returns:
-    - List of tuples: Averaged (rho, theta) coordinates.
+        np.ndarray: Array of averaged polar coordinates.
     """
 
     if lines is None:
@@ -348,6 +371,15 @@ def average_nearby_lines(lines, rho_threshold, theta_threshold):
     return averaged_lines
 
 def filter_lines_by_angle(lines, vert_thresh):
+    """Return only those line that are inside the threshold
+
+    Args:
+        lines np.ndarray: Array of polar coordinates
+        vert_thresh int: Threshold value. 
+
+    Returns:
+        np.ndarray: Array of filtered polar coordinates 
+    """
 
     filtered_lines = []
     for line in lines:
