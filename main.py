@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd              
 
 import process
-import tester
 
 import tkinter as tk
 from tkinter import filedialog
@@ -136,30 +135,30 @@ def start_analysis():
 
 if __name__ == '__main__':
 
-    main_window = tk.Tk()
-    main_window.title(TITLE)
-    main_window.geometry(GEOMETRY)
+    # main_window = tk.Tk()
+    # main_window.title(TITLE)
+    # main_window.geometry(GEOMETRY)
 
-    select_file_label = tk.Label(main_window, text=SELECT_FILE_TEXT)
+    # select_file_label = tk.Label(main_window, text=SELECT_FILE_TEXT)
 
-    selected_file_label = tk.Label(main_window)
+    # selected_file_label = tk.Label(main_window)
 
-    select_file_btn = tk.Button(main_window, text=SELECT_FILE_BROWSE, command=write_path)
+    # select_file_btn = tk.Button(main_window, text=SELECT_FILE_BROWSE, command=write_path)
 
-    start_analysis_btn = tk.Button(main_window, text=START, command=start_analysis)
+    # start_analysis_btn = tk.Button(main_window, text=START, command=start_analysis)
 
-    main_window.columnconfigure(0)
-    main_window.columnconfigure(1)
+    # main_window.columnconfigure(0)
+    # main_window.columnconfigure(1)
 
-    main_window.rowconfigure(0) 
-    main_window.rowconfigure(1)
+    # main_window.rowconfigure(0) 
+    # main_window.rowconfigure(1)
 
-    select_file_label.grid(row=0, column=0)
-    selected_file_label.grid(row=0, column=1, columnspan=4)
+    # select_file_label.grid(row=0, column=0)
+    # selected_file_label.grid(row=0, column=1, columnspan=4)
 
-    select_file_btn.grid(row=1, column=0)
-    start_analysis_btn.grid(row=1, column=1)
-    main_window.mainloop()
+    # select_file_btn.grid(row=1, column=0)
+    # start_analysis_btn.grid(row=1, column=1)
+    # main_window.mainloop()
  
     # route = './data'
     # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
@@ -170,8 +169,8 @@ if __name__ == '__main__':
     # """Convert from pdf to JPEG
     # """
  
-    # route = './tmp'
-    # files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
+    route = './tmp'
+    files = [os.path.join(route, f) for f in os.listdir(route) if os.path.isfile(os.path.join(route, f))]
 
     # # for i, f in enumerate(files):
     # #     resized = cv.resize(process.convert_img_2_binary(f), (1000, 800))
@@ -181,22 +180,22 @@ if __name__ == '__main__':
     # # """Test loop for all the images.
     # # """
            
-    # for i, f in enumerate(files):
-    #     gray_img, img = process.convert_img_2_binary(f)
-    #     # top, bottom, right, left = process.get_margins(img)  
-    #     # consc_left = process.get_conscious_margin(img, top)
-    #     # bottom_left = process.get_2nd_point_4_slope(img, bottom)
-    #     # # internal_removed = process.detect_lines(img, gray_img, top, bottom)
-    #     # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
+    for i, f in enumerate(files):
+        gray_img, img = process.convert_img_2_binary(f)
+        # top, bottom, right, left = process.get_margins(img)  
+        # consc_left = process.get_conscious_margin(img, top)
+        # bottom_left = process.get_2nd_point_4_slope(img, bottom)
+        # # internal_removed = process.detect_lines(img, gray_img, top, bottom)
+        # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
         
-    #     # img_show = process.test_line_segments(img)
-    #     # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
-    #     img_show, avg = process.detect_lines(img, gray_img)
+        # img_show = process.test_line_segments(img)
+        # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
+        img_show = process.internal_pixel_removal_2(img)
 
-    #     # cv.imshow(f'With mar gin {i}', img_show)
-    #     cv.imwrite(f'lines/{i}.png', img_show)
-    #     # cv.waitKey()
-    #     cv.destroyAllWindows()
+        # cv.imshow(f'With mar gin {i}', img_show)
+        cv.imwrite(f'contours/{i}.png', img_show)
+        # cv.waitKey()
+        cv.destroyAllWindows()
 
 
 
