@@ -330,7 +330,10 @@ def detect_lines(binary_img, gray_img):
             thetas.append(np.degrees(theta))
             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-
+    cv.imshow("line", original_rgb)
+    cv.waitKey()
+    cv.destroyAllWindows()
+    
     return original_rgb, thetas
 
 def average_nearby_lines(lines, rho_threshold, theta_threshold):
