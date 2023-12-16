@@ -290,35 +290,12 @@ def detect_lines(binary_img, gray_img):
     # cv.imshow('original RGB', original_rgb)
 
     lines = detect_line(img_cpy)
-#     if lines is not None:
-# # 
-#         for line in lines:
-# # 
-#             rho, theta = line[0]
-#             # rho, theta = line
-#             a = np.cos(theta)
-#             b = np.sin(theta)
-#             x0 = a * rho
-#             y0 = b * rho
-#             x1 = int(x0 + 5000 * (-b))
-#             y1 = int(y0 + 5000 * (a)
-#             x2 = int(x0 - 5000 * (-b))
-#             y2 = int(y0 - 5000 * (a))
-# #   
-#             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-    # lines2 = Palagyis_megoldas(lines)
-    x_thresh = yaml_const['PROCESSING_CONST']['X_THRESH']
-    y_thresh = yaml_const['PROCESSING_CONST']['Y_THRESH']
-    lines2 = average_nearby_lines(lines, x_thresh, y_thresh* np.pi/180)
-
-    thetas = []
-    if lines2 is not None:
+    if lines is not None:
 # 
-        for line in lines2:
+        for line in lines:
 # 
-            # rho, theta = line[0]
-            rho, theta = line
+            rho, theta = line[0]
+            # rho, theta = line
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
@@ -327,12 +304,32 @@ def detect_lines(binary_img, gray_img):
             y1 = int(y0 + 5000 * (a))
             x2 = int(x0 - 5000 * (-b))
             y2 = int(y0 - 5000 * (a))
-            thetas.append(np.degrees(theta))
-            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
+#   
+            cv.line(original_rgb, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    cv.imshow("line", original_rgb)
-    cv.waitKey()
-    cv.destroyAllWindows()
+    # lines2 = Palagyis_megoldas(lines)
+    x_thresh = yaml_const['PROCESSING_CONST']['X_THRESH']
+    y_thresh = yaml_const['PROCESSING_CONST']['Y_THRESH']
+    lines2 = average_nearby_lines(lines, x_thresh, y_thresh* np.pi/180)
+
+    thetas = []
+#     if lines2 is not None:
+# # 
+#         for line in lines2:
+# # 
+#             # rho, theta = line[0]
+#             rho, theta = line
+#             a = np.cos(theta)
+#             b = np.sin(theta)
+#             x0 = a * rho
+#             y0 = b * rho
+#             x1 = int(x0 + 5000 * (-b))
+#             y1 = int(y0 + 5000 * (a))
+#             x2 = int(x0 - 5000 * (-b))
+#             y2 = int(y0 - 5000 * (a))
+#             thetas.append(np.degrees(theta))
+#             cv.line(original_rgb, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
     
     return original_rgb, thetas
 

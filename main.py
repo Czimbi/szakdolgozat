@@ -126,6 +126,8 @@ def start_analysis():
     gray_scale_img, binary_img = process.convert_img_2_binary(img_path)
 
     measure_margins(binary_img)
+
+    name = img_path.split('/')[-1].split('.')[0]
     start_hough(binary_img, gray_scale_img)
 
     csv_path = yaml_const['PATH_CONST']['ANALYSISPATH'] + file_name + '.csv'
@@ -182,18 +184,15 @@ if __name__ == '__main__':
            
     # for i, f in enumerate(files):
     #     gray_img, img = process.convert_img_2_binary(f)
-    #     # top, bottom, right, left = process.get_margins(img)  
-    #     # consc_left = process.get_conscious_margin(img, top)
-    #     # bottom_left = process.get_2nd_point_4_slope(img, bottom)
-    #     # # internal_removed = process.detect_lines(img, gray_img, top, bottom)
-    #     # img_show = tester.ResizeWithAspectRatio(internal_removed, 1250, 800)
-        
-    #     # img_show = process.test_line_segments(img)
-    #     # img_show = tester.draw_line(gray_img, top, bottom, right, consc_left, bottom_left)
-    #     img_show = process.internal_pixel_removal_2(img)
-
+    #     contours = process.internal_pixel_removal_2(img)
+    #     filled = process.hole_filling(img)
+    #     lines, avg = process.detect_lines(img, gray_img)
     #     # cv.imshow(f'With mar gin {i}', img_show)
-    #     cv.imwrite(f'contours/{i}.png', img_show)
+    #     name = f.split('/')[-1].split('.')[0]
+    #     cv.imwrite(f'binarized/{name}.png', cv.bitwise_not(img))
+    #     cv.imwrite(f'filled/{name}.png', cv.bitwise_not(filled))
+    #     cv.imwrite(f'contours/{name}.png', cv.bitwise_not(contours))
+    #     cv.imwrite(f'hough_lines/{name}.png', lines)
     #     # cv.waitKey()
     #     cv.destroyAllWindows()
 
